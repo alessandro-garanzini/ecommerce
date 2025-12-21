@@ -5,15 +5,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
-      - /api/.env
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - api/.env
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ecommerce_user -d ecommerce"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -41,12 +37,9 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - /api/.env
+      - api/.env
     environment:
-      - DEBUG=${DEBUG}
-      - SECRET_KEY=${SECRET_KEY}
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://ecommerce_user:ecommerce_pass_dev_123@db:5432/ecommerce
     depends_on:
       db:
         condition: service_healthy
