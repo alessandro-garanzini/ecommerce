@@ -121,6 +121,68 @@ The project uses a **robust JWT-based authentication system** with role-based ac
 - `api/apps/accounts/managers.py` - User creation methods
 - `api/apps/accounts/services/auth_service.py` - Business logic
 
+## Base Model & Soft Delete
+
+**All models should inherit from `BaseModel`** (defined in `api/core/models.py`) to get automatic timestamp tracking and soft delete functionality:
+
+### BaseModel Features
+- **Automatic timestamps**: `created_at` and `updated_at` fields
+- **Soft delete support**: `deleted_at` field with custom managers
+- **Two managers**:
+  - `objects` - Default manager (excludes soft-deleted objects)
+  - `all_objects` - Includes soft-deleted objects
+- **Utility methods**: `soft_delete()`, `restore()`, `is_deleted` property
+- **Default ordering**: By `created_at` descending
+
+### Usage Example
+```python
+from core.models import BaseModel
+from auditlog.registry import auditlog
+
+class Product(BaseModel):
+    """Product model with automatic timestamps and soft delete"""
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        db_table = 'products'
+        verbose_name = 'Product'
+        verbose_name_plural = 'Products'
+
+# Register for audit logging
+auditlog.register(Product)
+```
+
+### Soft Delete Operations
+```python
+# Soft delete a product
+product.soft_delete()  # Sets deleted_at timestamp
+
+# Check if deleted
+if product.is_deleted:
+    print("Product is soft-deleted")
+
+# Restore a deleted product
+product.restore()  # Clears deleted_at
+
+# Query only active (non-deleted) products
+active_products = Product.objects.all()  # Excludes soft-deleted
+
+# Query all products including deleted
+all_products = Product.all_objects.all()  # Includes soft-deleted
+```
+
+### Important Notes
+- **Always inherit from BaseModel** unless you have a specific reason not to
+- **Use `soft_delete()`** instead of `delete()` to preserve data
+- **Use `objects` manager** for regular queries (soft-deleted items excluded)
+- **Use `all_objects` manager** when you need to include deleted items
+- The `created_at` and `deleted_at` fields are **indexed** for query performance
+- BaseModel sets **default ordering** by `-created_at` (newest first)
+
+### Key Files
+- `api/core/models.py` - BaseModel abstract model and custom managers
+
 ## Docker Environment
 
 **IMPORTANT**: This project is fully Dockerized. Always work within the Docker environment:
@@ -397,6 +459,7 @@ CORS_ALLOWED_ORIGINS: Frontend origins
 
 When working on this project:
 - ✅ **Use Django Ninja** for APIs (not DRF)
+- ✅ **Inherit from BaseModel** for all models (timestamps + soft delete)
 - ✅ **Follow the accounts app structure** as reference
 - ✅ **Write tests for everything** - run them frequently
 - ✅ **Use docker compose exec** for all commands
