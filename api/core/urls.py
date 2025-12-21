@@ -17,12 +17,21 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
+from accounts.api import router as auth_router
 
-api = NinjaAPI()
+api = NinjaAPI(
+    title='Ecommerce API',
+    version='1.0.0',
+    description='Ecommerce backend API with JWT authentication'
+)
 
-@api.get("/add")
-def add(request, a: int, b: int):
-    return {"result": a + b}
+# Register routers
+api.add_router('/auth/', auth_router)
+
+# Test endpoint
+@api.get("/health")
+def health_check(request):
+    return {"status": "healthy", "message": "API is running"}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
