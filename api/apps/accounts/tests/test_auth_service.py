@@ -174,6 +174,9 @@ class TestAuthServicePasswordReset:
     @patch('apps.accounts.services.auth_service.send_mail')
     def test_generate_password_reset_token_success(self, mock_send_mail, customer_user):
         """Test generating password reset token"""
+        # Reset rate limit before test
+        self.auth_service.reset_rate_limit('customer@example.com', 'password_reset')
+        
         token, error = self.auth_service.generate_password_reset_token(
             'customer@example.com'
         )

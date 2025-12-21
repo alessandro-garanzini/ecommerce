@@ -294,6 +294,11 @@ class TestPasswordResetEndpoints:
     
     def test_password_reset_request_success(self, api_client, customer_user):
         """Test password reset request"""
+        # Reset rate limit before test
+        from apps.accounts.services.auth_service import AuthService
+        auth_service = AuthService()
+        auth_service.reset_rate_limit('customer@example.com', 'password_reset')
+        
         payload = {
             'email': 'customer@example.com'
         }

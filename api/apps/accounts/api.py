@@ -1,89 +1,27 @@
-from typing import Optional
 from datetime import datetime
 from django.contrib.auth import authenticate, get_user_model
-from django.db import transaction
-from ninja import Router, Schema
-from ninja.errors import HttpError
+from ninja import Router
 from ninja_jwt.tokens import RefreshToken
 from ninja_jwt.exceptions import TokenError
 
 from .auth import jwt_auth, admin_jwt_auth, staff_jwt_auth, customer_jwt_auth
 from .services.auth_service import AuthService
-from .models import UserGroups
+from .schemas import (
+    RegisterSchema,
+    LoginSchema,
+    TokenResponseSchema,
+    RefreshTokenSchema,
+    PasswordResetRequestSchema,
+    PasswordResetConfirmSchema,
+    UserSchema,
+    MessageSchema
+)
 
 User = get_user_model()
 auth_service = AuthService()
 
 # Initialize router
 router = Router(tags=['Authentication'])
-
-
-# Schemas
-
-class RegisterSchema(Schema):
-    email: str
-    password: str
-    first_name: Optional[str] = ''
-    last_name: Optional[str] = ''
-    role: Optional[str] = 'customer'  # 'customer', 'staff', or 'admin' (admin requires special permission)
-
-
-class LoginSchema(Schema):
-    email: str
-    password: str
-
-
-class TokenResponseSchema(Schema):
-    access: str
-    refresh: str
-    token_type: str = 'Bearer'
-    expires_in: int  # seconds
-
-
-class RefreshTokenSchema(Schema):
-    refresh: str
-
-
-class PasswordResetRequestSchema(Schema):
-    email: str
-
-
-class PasswordResetConfirmSchema(Schema):
-    token: str
-    new_password: str
-
-
-class UserSchema(Schema):
-    id: int
-    email: str
-    first_name: str
-    last_name: str
-    is_staff: bool
-    is_customer: bool
-    is_active: bool
-    role: str
-    groups: list[str]
-    date_joined: datetime
-    
-    @staticmethod
-    def resolve_date_joined(obj):
-        return obj.date_joined
-    
-    @staticmethod
-    def resolve_is_customer(obj):
-        return obj.is_customer
-    
-    @staticmethod
-    def resolve_role(obj):
-        return obj.get_role_display()
-    
-    @staticmethod
-    def resolve_groups(obj):
-        return list(obj.groups.values_list('name', flat=True))
-
-
-class MessageSchema(Schema):
-    message: str
 
 
 # Endpoints
