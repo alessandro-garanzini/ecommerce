@@ -47,8 +47,10 @@ INSTALLED_APPS = [
     'ninja',
     'ninja_jwt',
     'auditlog',
+    'mptt',
     # Local apps
     'accounts',
+    'catalog',
 ]
 
 MIDDLEWARE = [

@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
 from accounts.api import router as auth_router
+from catalog.api import router as catalog_router
 
 api = NinjaAPI(
     title='Ecommerce API',
@@ -27,6 +28,7 @@ api = NinjaAPI(
 
 # Register routers
 api.add_router('/auth/', auth_router)
+api.add_router('/catalog/', catalog_router)
 
 # Test endpoint
 @api.get("/health")
